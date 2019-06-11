@@ -482,7 +482,7 @@ impl Miner {
 				block_number: chain_info.best_block_number,
 				current_timestamp: chain_info.best_block_timestamp,
 				nonce_cap,
-				max_len: max_transactions,
+				max_len: 30,
 				ordering: miner::PendingOrdering::Priority,
 			}
 		);
@@ -753,7 +753,7 @@ impl Miner {
 				#[cfg(feature = "work-notify")]
 				{
 					// If push notifications are enabled we assume all work items are used.
-					if is_new && !self.listeners.read().is_empty() {
+					if is_new {
 						sealing.queue.use_last_ref();
 					}
 				}

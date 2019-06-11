@@ -62,7 +62,7 @@ impl<M: Machine> Engine<M> for InstantSeal<M> {
 	fn machine(&self) -> &M { &self.machine }
 
 	fn seals_internally(&self) -> Option<bool> {
-		Some(true)
+        None
 	}
 
 	fn generate_seal(&self, block: &ExecutedBlock, _parent: &Header) -> Seal {
