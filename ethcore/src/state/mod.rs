@@ -59,6 +59,7 @@ pub mod backend;
 pub use self::account::Account;
 pub use self::backend::Backend;
 pub use self::substate::Substate;
+use itertools::assert_equal;
 
 /// Used to return information about an `State::apply` operation.
 pub struct ApplyOutcome<T, V> {
@@ -845,7 +846,13 @@ impl<B: Backend> State<B> {
 			self.commit()?;
 			TransactionOutcome::StateRoot(self.root().clone())
 		};
-
+        match e.exception {
+            Some(err) => {
+				println!("{}", err);
+                assert!(false);
+			}
+			None => {}
+		};
 		let output = e.output;
 		let receipt = Receipt::new(outcome, e.cumulative_gas_used, e.logs);
 		trace!(target: "state", "Transaction receipt: {:?}", receipt);

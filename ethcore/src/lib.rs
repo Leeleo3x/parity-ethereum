@@ -151,6 +151,7 @@ extern crate parity_runtime;
 
 #[cfg(not(time_checked_add))]
 extern crate time_utils;
+extern crate core;
 
 pub mod block;
 pub mod builtin;

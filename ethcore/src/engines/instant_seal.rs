@@ -18,6 +18,9 @@ use engines::{Engine, Seal};
 use machine::Machine;
 use types::header::{Header, ExtendedHeader};
 use block::ExecutedBlock;
+use core::borrow::BorrowMut;
+use types::transaction::Action;
+use ethereum_types::U256;
 
 /// `InstantSeal` params.
 #[derive(Default, Debug, PartialEq)]
@@ -39,13 +42,14 @@ impl From<::ethjson::spec::InstantSealParams> for InstantSealParams {
 pub struct InstantSeal<M> {
 	params: InstantSealParams,
 	machine: M,
+	counter: u32,
 }
 
 impl<M> InstantSeal<M> {
 	/// Returns new instance of InstantSeal over the given state machine.
 	pub fn new(params: InstantSealParams, machine: M) -> Self {
 		InstantSeal {
-			params, machine,
+			params, machine, counter: 0,
 		}
 	}
 }
@@ -57,10 +61,16 @@ impl<M: Machine> Engine<M> for InstantSeal<M> {
 
 	fn machine(&self) -> &M { &self.machine }
 
-	fn seals_internally(&self) -> Option<bool> { Some(true) }
+	fn seals_internally(&self) -> Option<bool> {
+		Some(true)
+	}
 
 	fn generate_seal(&self, block: &ExecutedBlock, _parent: &Header) -> Seal {
-		if block.transactions.is_empty() {
+		if !block.transactions.iter().any(|it| match it.action {
+			Action::Create => true,
+			_ => false
+		} || it.value != U256::from(0)) && block.transactions.len() < 30 {
+//        if block.transactions.is_empty() {
 			Seal::None
 		} else {
 			Seal::Regular(Vec::new())
