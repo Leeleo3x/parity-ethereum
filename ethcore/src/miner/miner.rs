@@ -482,7 +482,7 @@ impl Miner {
 				block_number: chain_info.best_block_number,
 				current_timestamp: chain_info.best_block_timestamp,
 				nonce_cap,
-				max_len: 30,
+				max_len: max_transactions,
 				ordering: miner::PendingOrdering::Priority,
 			}
 		);
