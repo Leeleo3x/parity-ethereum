@@ -65,6 +65,8 @@ impl<M: Machine> Engine<M> for InstantSeal<M> {
         None
 	}
 
+	fn seal_fields(&self, _header: &Header) -> usize { 2 }
+
 	fn generate_seal(&self, block: &ExecutedBlock, _parent: &Header) -> Seal {
 		if !block.transactions.iter().any(|it| match it.action {
 			Action::Create => true,
