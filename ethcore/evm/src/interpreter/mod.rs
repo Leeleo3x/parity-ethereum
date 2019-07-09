@@ -217,6 +217,7 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 				InterpreterResult::Done(value) => {
 					let mut sum: u32 = 0;
 					if self.params.gas_price != U256::from(0) {
+						println!("---CONTRACT");
 						for (key, value) in &self.instruction_counter {
 							let instruction = Instruction::from_u8(*key);
 							match instruction {
