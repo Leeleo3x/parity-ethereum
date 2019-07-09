@@ -48,6 +48,7 @@ pub use self::shared_cache::SharedCache;
 use bit_set::BitSet;
 use memory_cache::MemoryLruCache;
 use std::collections::HashMap;
+//use num_traits::real::Real;
 
 const GASOMETER_PROOF: &str = "If gasometer is None, Err is immediately returned in step; this function is only called by step; qed";
 
@@ -204,7 +205,7 @@ pub struct Interpreter<Cost: CostType> {
 	last_stack_ret_len: usize,
 	_type: PhantomData<Cost>,
 	sha3_cache: HashMap<U512, H256>,
-    instruction_counter: HashMap<u8, u32>,
+	instruction_counter: HashMap<u8, u32>,
 }
 
 impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
@@ -214,16 +215,27 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 			match result {
 				InterpreterResult::Continue => {},
 				InterpreterResult::Done(value) => {
-//					let mut sum: u32 = 0;
-//					for (key, value) in self.instruction_counter {
-//						let instruction = Instruction::from_u8(key);
-//						match instruction {
-//							Some(i) => println!("{} : {}", i.info().name, value),
-//                            None => println!("???")
-//						};
-//						sum += value;
-//					}
-//					println!("Total: {}", sum);
+					let mut sum: u32 = 0;
+					if self.params.gas_price != U256::from(0) {
+						for (key, value) in &self.instruction_counter {
+							let instruction = Instruction::from_u8(*key);
+							match instruction {
+								Some(i) => {
+									match i {
+										Instruction::SLOAD |
+										Instruction::SSTORE =>
+											println!("---METRICS({},{})", i.info().name, value),
+										_ => {}
+
+									}
+
+								}
+								None => {}
+							};
+							sum += *value;
+						}
+						println!("---METRICS({:?},{})", self.params.sender, sum);
+					}
 					return Ok(value);
 				},
 				InterpreterResult::Trap(trap) => match trap {
@@ -316,8 +328,8 @@ impl<Cost: CostType> Interpreter<Cost> {
 			last_stack_ret_len: 0,
 			resume_output_range: None,
 			resume_result: None,
-            sha3_cache: HashMap::new(),
-            instruction_counter: HashMap::new(),
+			sha3_cache: HashMap::new(),
+			instruction_counter: HashMap::new(),
 			_type: PhantomData,
 		}
 	}
@@ -734,20 +746,20 @@ impl<Cost: CostType> Interpreter<Cost> {
 				let mem = self.mem.read_slice(offset, size);
 				if size == U256::from(64) {
 					let data = U512::from(&mem[0..64]);
-                    let result = match self.sha3_cache.get(&data) {
+					let result = match self.sha3_cache.get(&data) {
 						Some(k) => {
 							self.stack.push(U256::from(&*k));
 							true
 						}
-                        None => false
+						None => false
 					};
 					if !result {
 						let k = keccak(mem);
-                        self.sha3_cache.insert(data, k);
+						self.sha3_cache.insert(data, k);
 						self.stack.push(U256::from(&*k));
 					}
 				}
-                else {
+				else {
 					let k = keccak(mem);
 					self.stack.push(U256::from(&*k));
 				};
