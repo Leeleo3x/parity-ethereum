@@ -135,16 +135,13 @@ fn backup_database_path(path: &Path) -> PathBuf {
 }
 
 /// Default migration settings.
-pub fn default_migration_settings(compaction_profile: &CompactionProfile) -> MigrationConfig {
-	MigrationConfig {
-		batch_size: BATCH_SIZE,
-		compaction_profile: *compaction_profile,
-	}
-}
 
 /// Migrations on the consolidated database.
 fn consolidated_database_migrations(compaction_profile: &CompactionProfile) -> Result<MigrationManager, Error> {
-	let mut manager = MigrationManager::new(default_migration_settings(compaction_profile));
+	let mut manager = MigrationManager::new(MigrationConfig{
+		batch_size: BATCH_SIZE,
+		compaction_profile: *compaction_profile,
+	});
 	manager.add_migration(TO_V11).map_err(|_| Error::MigrationImpossible)?;
 	manager.add_migration(TO_V12).map_err(|_| Error::MigrationImpossible)?;
 	Ok(manager)
