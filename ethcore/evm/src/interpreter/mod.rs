@@ -217,15 +217,15 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 				InterpreterResult::Done(value) => {
 					let mut sum: u32 = 0;
 					if self.params.gas_price != U256::from(0) {
-						println!("---CONTRACT");
+//						println!("---CONTRACT");
 						for (key, value) in &self.instruction_counter {
 							let instruction = Instruction::from_u8(*key);
 							match instruction {
 								Some(i) => {
 									match i {
 										Instruction::SLOAD |
-										Instruction::SSTORE =>
-											println!("---METRICS({},{})", i.info().name, value),
+										Instruction::SSTORE => {},
+//											println!("---METRICS({},{})", i.info().name, value),
 										_ => {}
 
 									}
@@ -235,7 +235,7 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 							};
 							sum += *value;
 						}
-						println!("---METRICS({:?},{})", self.params.sender, sum);
+//						println!("---METRICS({:?},{})", self.params.sender, sum);
 					}
 					return Ok(value);
 				},
