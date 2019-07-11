@@ -80,6 +80,7 @@ use verification::queue::kind::blocks::Unverified;
 use verification::{PreverifiedBlock, Verifier, BlockQueue};
 use verification;
 use ansi_term::Colour;
+use kvdb::DBOp;
 
 // re-export
 pub use types::blockchain_info::BlockChainInfo;
@@ -565,6 +566,16 @@ impl Importer {
 		let is_canon = route.enacted.last().map_or(false, |h| h == hash);
 		state.sync_cache(&route.enacted, &route.retracted, is_canon);
 		// Final commit to the DB
+        for op in &batch.ops {
+			match op {
+				DBOp::Insert { col, key, value } => {
+//					println!("{},{},{}", col, key, value)
+				},
+				DBOp::Delete { col, key } => {
+//					println!("{},{}", col, key)
+				},
+			}
+		}
 		client.db.read().key_value().write_buffered(batch);
 		chain.commit();
 

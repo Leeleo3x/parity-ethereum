@@ -66,7 +66,7 @@ panic_hook = { path = "util/panic-hook" }
 keccak-hash = "0.1"
 migration-rocksdb = { path = "util/migration-rocksdb" }
 kvdb = "0.1"
-kvdb-rocksdb = "0.1.3"
+kvdb-rocksdb = {git = "https://github.com/Leeleo3x/parity-common/", branch="perf"}
 journaldb = { path = "util/journaldb" }
 
 ethcore-secretstore = { path = "secret-store", optional = true }
