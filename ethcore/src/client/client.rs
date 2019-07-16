@@ -98,7 +98,7 @@ const MAX_QUEUE_SIZE_TO_SLEEP_ON: usize = 2;
 const MIN_HISTORY_SIZE: u64 = 8;
 
 /// Report on the status of a client.
-#[derive(Default, Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ClientReport {
 	/// How many blocks have been imported so far.
 	pub blocks_imported: usize,
@@ -108,6 +108,20 @@ pub struct ClientReport {
 	pub gas_processed: U256,
 	/// Memory used by state DB
 	pub state_db_mem: usize,
+
+	pub start_time: Instant,
+}
+
+impl Default for ClientReport {
+    fn default() -> ClientReport {
+        ClientReport {
+            start_time: Instant::now(),
+            gas_processed: U256::from(0),
+			blocks_imported: 0,
+			transactions_applied: 0,
+			state_db_mem: 0,
+		}
+	}
 }
 
 impl ClientReport {
@@ -116,6 +130,10 @@ impl ClientReport {
 		self.blocks_imported += 1;
 		self.transactions_applied += transactions;
 		self.gas_processed = self.gas_processed + *header.gas_used();
+		if self.blocks_imported > 5200000 {
+            *self = Default::default();
+//            *self.start_time = Instant::now();
+		}
 	}
 }
 
@@ -126,12 +144,16 @@ impl<'a> ::std::ops::Sub<&'a ClientReport> for ClientReport {
 		let higher_mem = ::std::cmp::max(self.state_db_mem, other.state_db_mem);
 		let lower_mem = ::std::cmp::min(self.state_db_mem, other.state_db_mem);
 
-		self.blocks_imported -= other.blocks_imported;
-		self.transactions_applied -= other.transactions_applied;
-		self.gas_processed = self.gas_processed - other.gas_processed;
-		self.state_db_mem = higher_mem - lower_mem;
+        if self.blocks_imported < other.blocks_imported {
+			Default::default()
+		} else {
+			self.blocks_imported -= other.blocks_imported;
+			self.transactions_applied -= other.transactions_applied;
+			self.gas_processed = self.gas_processed - other.gas_processed;
+			self.state_db_mem = higher_mem - lower_mem;
 
-		self
+			self
+		}
 	}
 }
 

@@ -846,13 +846,13 @@ impl<B: Backend> State<B> {
 			self.commit()?;
 			TransactionOutcome::StateRoot(self.root().clone())
 		};
-        match e.exception {
-            Some(err) => {
-				println!("{}", err);
-                assert!(false);
-			}
-			None => {}
-		};
+//        match e.exception {
+//            Some(err) => {
+//				println!("{}", err);
+//                assert!(false);
+//			}
+//			None => {}
+//		};
 		let output = e.output;
 		let receipt = Receipt::new(outcome, e.cumulative_gas_used, e.logs);
 		trace!(target: "state", "Transaction receipt: {:?}", receipt);
