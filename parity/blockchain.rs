@@ -502,6 +502,7 @@ fn execute_import(cmd: ImportBlockchain) -> Result<(), String> {
 		report.gas_processed / 1_000_000,
 		(report.gas_processed / (ms * 1000)).low_u64(),
 	);
+//    client_db.key_value().close
 	Ok(())
 }
 
