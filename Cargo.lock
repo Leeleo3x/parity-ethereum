@@ -1986,7 +1986,7 @@ dependencies = [
 [[package]]
 name = "kvdb-rocksdb"
 version = "0.1.4"
-source = "git+https://github.com/Leeleo3x/parity-common/?branch=rocksdb#c0bd5bafaf63c6ce1548ec98fbd882138484f7fe"
+source = "git+https://github.com/Leeleo3x/parity-common/?branch=rocksdb#4d51c01b3adb7dda330e042acccf71b566cd9a1d"
 dependencies = [
  "elastic-array 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "fs-swap 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
