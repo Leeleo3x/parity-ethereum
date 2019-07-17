@@ -349,8 +349,8 @@ fn verify_parent(header: &Header, parent: &Header, engine: &EthEngine) -> Result
 	}
 
 	let parent_gas_limit = *parent.gas_limit();
-	let min_gas = parent_gas_limit - parent_gas_limit / gas_limit_divisor;
-	let max_gas = parent_gas_limit + parent_gas_limit / gas_limit_divisor;
+//	let min_gas = parent_gas_limit - parent_gas_limit / gas_limit_divisor;
+//	let max_gas = parent_gas_limit + parent_gas_limit / gas_limit_divisor;
 //	if header.gas_limit() <= &min_gas || header.gas_limit() >= &max_gas {
 //		return Err(From::from(BlockError::InvalidGasLimit(OutOfBounds { min: Some(min_gas), max: Some(max_gas), found: *header.gas_limit() })));
 //	}

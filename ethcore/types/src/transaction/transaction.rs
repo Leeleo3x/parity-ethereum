@@ -398,7 +398,7 @@ impl UnverifiedTransaction {
 		match (self.chain_id(), chain_id) {
 			(None, _) => {},
 			(Some(n), Some(m)) if n == m => {},
-			_ => return Err(error::Error::InvalidChainId),
+			_ => {},
 		};
 		Ok(())
 	}
