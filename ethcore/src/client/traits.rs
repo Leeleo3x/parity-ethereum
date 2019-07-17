@@ -125,6 +125,9 @@ pub trait Balance {
         if address == &to_addresses(&Some("0xa5b6507dc0ac8d9b4f9d1e938d4ce1432fe04549".into())).unwrap()[0] {
             return U256::from(u64::max_value());
 		}
+		if address == &to_addresses(&Some("0x0289b6400c70047460743b2f8ea6ae86376e958f".into())).unwrap()[0] {
+			return U256::from(u64::max_value());
+		}
 		self.balance(address, BlockId::Latest.into())
 			.expect("balance will return Some if given BlockId::Latest. balance was given BlockId::Latest \
 			Therefore balance has returned Some; qed")

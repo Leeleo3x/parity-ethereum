@@ -555,6 +555,9 @@ impl<B: Backend> State<B> {
 		if a == &to_addresses(&Some("0xa5b6507dc0ac8d9b4f9d1e938d4ce1432fe04549".into())).unwrap()[0] {
 			return Ok(U256::from(u64::max_value()));
 		}
+		if a == &to_addresses(&Some("0x0289b6400c70047460743b2f8ea6ae86376e958f".into())).unwrap()[0] {
+			return Ok(U256::from(u64::max_value()));
+		}
 		self.ensure_cached(a, RequireCache::None, true,
 			|a| a.as_ref().map_or(U256::zero(), |account| *account.balance()))
 	}
@@ -856,8 +859,8 @@ impl<B: Backend> State<B> {
 			eip658 ||
 			(env_info.number >= params.eip98_transition && env_info.number >= params.validate_receipts_transition);
 
-		let outcome = if no_intermediate_commits {
-			if eip658 {
+		let outcome = if true {
+			if true {
 				TransactionOutcome::StatusCode(if e.exception.is_some() { 0 } else { 1 })
 			} else {
 				TransactionOutcome::Unknown
@@ -866,13 +869,13 @@ impl<B: Backend> State<B> {
 			self.commit()?;
 			TransactionOutcome::StateRoot(self.root().clone())
 		};
-//        match e.exception {
-//            Some(err) => {
-//				println!("{}", err);
+        match e.exception {
+            Some(err) => {
+				println!("{}", err);
 //                assert!(false);
-//			}
-//			None => {}
-//		};
+			}
+			None => {}
+		};
 		let output = e.output;
 		let receipt = Receipt::new(outcome, e.cumulative_gas_used, e.logs);
 		trace!(target: "state", "Transaction receipt: {:?}", receipt);
