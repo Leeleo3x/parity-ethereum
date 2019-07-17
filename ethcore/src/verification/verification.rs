@@ -284,14 +284,14 @@ pub fn verify_header_params(header: &Header, engine: &EthEngine, is_full: bool, 
 		return Err(From::from(BlockError::TooMuchGasUsed(OutOfBounds { max: Some(*header.gas_limit()), min: None, found: *header.gas_used() })));
 	}
 	let min_gas_limit = engine.params().min_gas_limit;
-	if header.gas_limit() < &min_gas_limit {
-		return Err(From::from(BlockError::InvalidGasLimit(OutOfBounds { min: Some(min_gas_limit), max: None, found: *header.gas_limit() })));
-	}
-	if let Some(limit) = engine.maximum_gas_limit() {
-		if header.gas_limit() > &limit {
-			return Err(From::from(::error::BlockError::InvalidGasLimit(OutOfBounds { min: None, max: Some(limit), found: *header.gas_limit() })));
-		}
-	}
+//	if header.gas_limit() < &min_gas_limit {
+//		return Err(From::from(BlockError::InvalidGasLimit(OutOfBounds { min: Some(min_gas_limit), max: None, found: *header.gas_limit() })));
+//	}
+//	if let Some(limit) = engine.maximum_gas_limit() {
+//		if header.gas_limit() > &limit {
+//			return Err(From::from(::error::BlockError::InvalidGasLimit(OutOfBounds { min: None, max: Some(limit), found: *header.gas_limit() })));
+//		}
+//	}
 	let maximum_extra_data_size = engine.maximum_extra_data_size();
 	if header.number() != 0 && header.extra_data().len() > maximum_extra_data_size {
 		return Err(From::from(BlockError::ExtraDataOutOfBounds(OutOfBounds { min: None, max: Some(maximum_extra_data_size), found: header.extra_data().len() })));
@@ -351,9 +351,9 @@ fn verify_parent(header: &Header, parent: &Header, engine: &EthEngine) -> Result
 	let parent_gas_limit = *parent.gas_limit();
 	let min_gas = parent_gas_limit - parent_gas_limit / gas_limit_divisor;
 	let max_gas = parent_gas_limit + parent_gas_limit / gas_limit_divisor;
-	if header.gas_limit() <= &min_gas || header.gas_limit() >= &max_gas {
-		return Err(From::from(BlockError::InvalidGasLimit(OutOfBounds { min: Some(min_gas), max: Some(max_gas), found: *header.gas_limit() })));
-	}
+//	if header.gas_limit() <= &min_gas || header.gas_limit() >= &max_gas {
+//		return Err(From::from(BlockError::InvalidGasLimit(OutOfBounds { min: Some(min_gas), max: Some(max_gas), found: *header.gas_limit() })));
+//	}
 
 	Ok(())
 }
