@@ -108,14 +108,11 @@ pub struct ClientReport {
 	pub gas_processed: U256,
 	/// Memory used by state DB
 	pub state_db_mem: usize,
-
-	pub start_time: Instant,
 }
 
 impl Default for ClientReport {
     fn default() -> ClientReport {
         ClientReport {
-            start_time: Instant::now(),
             gas_processed: U256::from(0),
 			blocks_imported: 0,
 			transactions_applied: 0,
@@ -130,10 +127,10 @@ impl ClientReport {
 		self.blocks_imported += 1;
 		self.transactions_applied += transactions;
 		self.gas_processed = self.gas_processed + *header.gas_used();
-		if self.blocks_imported > 5200000 {
-            *self = Default::default();
-//            *self.start_time = Instant::now();
-		}
+//		if self.blocks_imported > 5200000 {
+//            *self = Default::default();
+////            *self.start_time = Instant::now();
+//		}
 	}
 }
 
