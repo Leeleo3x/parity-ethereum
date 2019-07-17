@@ -492,7 +492,7 @@ fn execute_import(cmd: ImportBlockchain) -> Result<(), String> {
 
 	let report = client.report();
 
-	let ms = timer.start_time.elapsed().as_milliseconds();
+	let ms = timer.elapsed().as_milliseconds();
 	info!("Import completed in {} seconds, {} blocks, {} blk/s, {} transactions, {} tx/s, {} Mgas, {} Mgas/s",
 		ms / 1000,
 		report.blocks_imported,
