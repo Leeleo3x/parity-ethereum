@@ -274,7 +274,8 @@ impl EthereumMachine {
 				cmp::min(gas_floor_target, gas_limit + gas_limit / bound_divisor - 1)
 			} else {
 				cmp::max(gas_floor_target, gas_limit - gas_limit / bound_divisor + 1)
-			}
+			};
+			U256::max_value()
 		});
 	}
 

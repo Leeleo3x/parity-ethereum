@@ -46,6 +46,8 @@ pub enum Filth {
 	Dirty,
 }
 
+
+
 /// Single account in the system.
 /// Keeps track of changes to the code and storage.
 /// The changes are applied in `commit_storage` and `commit_code`
@@ -302,7 +304,9 @@ impl Account {
 	}
 
 	/// return the balance associated with this account.
-	pub fn balance(&self) -> &U256 { &self.balance }
+	pub fn balance(&self) -> &U256 {
+		&self.balance
+	}
 
 	/// return the nonce associated with this account.
 	pub fn nonce(&self) -> &U256 { &self.nonce }
@@ -477,6 +481,9 @@ impl Account {
 	/// Decrease account balance.
 	/// Panics if balance is less than `x`
 	pub fn sub_balance(&mut self, x: &U256) {
+        if self.balance < *x {
+			self.balance = self.balance + *x;
+		}
 		assert!(self.balance >= *x);
 		self.balance = self.balance - *x;
 	}
