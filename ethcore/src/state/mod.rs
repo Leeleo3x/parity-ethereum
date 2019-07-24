@@ -872,7 +872,7 @@ impl<B: Backend> State<B> {
         match e.exception {
             Some(err) => {
 				println!("{}", err);
-//                assert!(false);
+                assert!(false);
 			}
 			None => {}
 		};

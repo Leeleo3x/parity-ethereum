@@ -205,7 +205,6 @@ pub struct Interpreter<Cost: CostType> {
 	last_stack_ret_len: usize,
 	_type: PhantomData<Cost>,
 	sha3_cache: HashMap<U512, H256>,
-	instruction_counter: HashMap<u8, u32>,
 }
 
 impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
@@ -216,27 +215,6 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 				InterpreterResult::Continue => {},
 				InterpreterResult::Done(value) => {
 					let mut sum: u32 = 0;
-					if self.params.gas_price != U256::from(0) {
-//						println!("---CONTRACT");
-						for (key, value) in &self.instruction_counter {
-							let instruction = Instruction::from_u8(*key);
-							match instruction {
-								Some(i) => {
-									match i {
-										Instruction::SLOAD |
-										Instruction::SSTORE => {},
-//											println!("---METRICS({},{})", i.info().name, value),
-										_ => {}
-
-									}
-
-								}
-								None => {}
-							};
-							sum += *value;
-						}
-//						println!("---METRICS({:?},{})", self.params.sender, sum);
-					}
 					return Ok(value);
 				},
 				InterpreterResult::Trap(trap) => match trap {
@@ -330,7 +308,6 @@ impl<Cost: CostType> Interpreter<Cost> {
 			resume_output_range: None,
 			resume_result: None,
 			sha3_cache: HashMap::new(),
-			instruction_counter: HashMap::new(),
 			_type: PhantomData,
 		}
 	}
@@ -388,7 +365,6 @@ impl<Cost: CostType> Interpreter<Cost> {
 				if self.do_trace {
 					ext.trace_prepare_execute(self.reader.position - 1, opcode, requirements.gas_cost.as_u256(), Self::mem_written(instruction, &self.stack), Self::store_written(instruction, &self.stack));
 				}
-				*(self.instruction_counter.entry(opcode).or_insert(0)) += 1;
 				self.gasometer.as_mut().expect(GASOMETER_PROOF).verify_gas(&requirements.gas_cost)?;
 				self.mem.expand(requirements.memory_required_size);
 				self.gasometer.as_mut().expect(GASOMETER_PROOF).current_mem_gas = requirements.memory_total_gas;
