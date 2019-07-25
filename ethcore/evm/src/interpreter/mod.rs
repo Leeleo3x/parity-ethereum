@@ -30,6 +30,7 @@ use hash::keccak;
 use bytes::Bytes;
 use ethereum_types::{U256, H256, Address, H512, U512};
 use num_bigint::BigUint;
+use std::sync::Mutex;
 
 use vm::{
 	self, ActionParams, ParamsType, ActionValue, CallType, MessageCallResult,
@@ -204,7 +205,13 @@ pub struct Interpreter<Cost: CostType> {
 	resume_result: Option<InstructionResult<Cost>>,
 	last_stack_ret_len: usize,
 	_type: PhantomData<Cost>,
-	sha3_cache: HashMap<U512, H256>,
+}
+
+lazy_static! {
+    static ref sha3_cache_mut: Mutex::<HashMap<U512, H256>> = {
+        let mut map = HashMap::new();
+        Mutex::new(map)
+    };
 }
 
 impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
@@ -307,7 +314,6 @@ impl<Cost: CostType> Interpreter<Cost> {
 			last_stack_ret_len: 0,
 			resume_output_range: None,
 			resume_result: None,
-			sha3_cache: HashMap::new(),
 			_type: PhantomData,
 		}
 	}
@@ -502,6 +508,7 @@ impl<Cost: CostType> Interpreter<Cost> {
 		instruction: Instruction,
 		provided: Option<Cost>
 	) -> vm::Result<InstructionResult<Cost>> {
+		let mut sha3_cache = sha3_cache_mut.lock().unwrap();
 		match instruction {
 			instructions::JUMP => {
 				let jump = self.stack.pop_back();
@@ -723,7 +730,7 @@ impl<Cost: CostType> Interpreter<Cost> {
 				let mem = self.mem.read_slice(offset, size);
 				if size == U256::from(64) {
 					let data = U512::from(&mem[0..64]);
-					let result = match self.sha3_cache.get(&data) {
+					let result = match sha3_cache.get(&data) {
 						Some(k) => {
 							self.stack.push(U256::from(&*k));
 							true
@@ -732,7 +739,7 @@ impl<Cost: CostType> Interpreter<Cost> {
 					};
 					if !result {
 						let k = keccak(mem);
-						self.sha3_cache.insert(data, k);
+						sha3_cache.insert(data, k);
 						self.stack.push(U256::from(&*k));
 					}
 				}
