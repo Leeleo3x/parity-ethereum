@@ -48,7 +48,7 @@ pub use self::shared_cache::SharedCache;
 
 use bit_set::BitSet;
 use memory_cache::MemoryLruCache;
-use std::collections::HashMap;
+use hashbrown::HashMap;
 //use num_traits::real::Real;
 
 const GASOMETER_PROOF: &str = "If gasometer is None, Err is immediately returned in step; this function is only called by step; qed";
