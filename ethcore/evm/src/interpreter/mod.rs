@@ -727,26 +727,26 @@ impl<Cost: CostType> Interpreter<Cost> {
 				let offset = self.stack.pop_back();
 				let size = self.stack.pop_back();
 				let mem = self.mem.read_slice(offset, size);
-				if size == U256::from(64) {
-					let mut sha3_cache = sha3_cache_mut.lock().unwrap();
-					let data = U512::from(&mem[0..64]);
-					let result = match sha3_cache.get(&data) {
-						Some(k) => {
-							self.stack.push(U256::from(&*k));
-							true
-						}
-						None => false
-					};
-					if !result {
-						let k = keccak(mem);
-						sha3_cache.insert(data, k);
-						self.stack.push(U256::from(&*k));
-					}
-				}
-				else {
+//				if size == U256::from(64) {
+//					let mut sha3_cache = sha3_cache_mut.lock().unwrap();
+//					let data = U512::from(&mem[0..64]);
+//					let result = match sha3_cache.get(&data) {
+//						Some(k) => {
+//							self.stack.push(U256::from(&*k));
+//							true
+//						}
+//						None => false
+//					};
+//					if !result {
+//						let k = keccak(mem);
+//						sha3_cache.insert(data, k);
+//						self.stack.push(U256::from(&*k));
+//					}
+//				}
+//				else {
 					let k = keccak(mem);
 					self.stack.push(U256::from(&*k));
-				};
+//				};
 			},
 			instructions::SLOAD => {
 				let key = H256::from(&self.stack.pop_back());
