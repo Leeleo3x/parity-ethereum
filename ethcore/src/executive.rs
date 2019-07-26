@@ -497,7 +497,6 @@ impl<'a> CallCreateExecutive<'a> {
 
 				let origin_info = OriginInfo::from(&params);
 				let exec = self.factory.create(params, self.schedule, self.depth);
-
 				let out = {
 					let mut ext = Self::as_externalities(state, self.info, self.machine, self.schedule, self.depth, self.stack_depth, self.static_flag, &origin_info, &mut unconfirmed_substate, OutputPolicy::InitContract, tracer, vm_tracer);
 					match exec.exec(&mut ext) {

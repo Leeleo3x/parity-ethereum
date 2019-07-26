@@ -49,6 +49,7 @@ pub use self::shared_cache::SharedCache;
 use bit_set::BitSet;
 use memory_cache::MemoryLruCache;
 use hashbrown::HashMap;
+use std::time::Instant;
 //use num_traits::real::Real;
 
 const GASOMETER_PROOF: &str = "If gasometer is None, Err is immediately returned in step; this function is only called by step; qed";
@@ -65,6 +66,16 @@ const TWO_POW_64: U256 = U256([0, 0x1, 0, 0]); // 0x1 00000000 00000000
 const TWO_POW_96: U256 = U256([0, 0x100000000, 0, 0]); //0x1 00000000 00000000 00000000
 const TWO_POW_224: U256 = U256([0, 0, 0, 0x100000000]); //0x1 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 const TWO_POW_248: U256 = U256([0, 0, 0, 0x100000000000000]); //0x1 00000000 00000000 00000000 00000000 00000000 00000000 00000000 000000
+
+fn as_micro(instant: &Instant) -> u64 {
+	let duration = instant.elapsed();
+	let mut sec = duration.as_secs();
+	let subsec = duration.subsec_nanos() as u64;
+	sec = sec.saturating_mul(1_000_000u64);
+	sec += subsec / 1_000;
+	sec
+}
+
 
 fn to_biguint(x: U256) -> BigUint {
 	let mut bytes = [0u8; 32];
@@ -205,6 +216,10 @@ pub struct Interpreter<Cost: CostType> {
 	resume_result: Option<InstructionResult<Cost>>,
 	last_stack_ret_len: usize,
 	_type: PhantomData<Cost>,
+	execution_timer: Instant,
+    store_timer: Instant,
+	store_time: u64,
+	is_recording: u32,
 }
 
 lazy_static! {
@@ -216,12 +231,25 @@ lazy_static! {
 
 impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 	fn exec(mut self: Box<Self>, ext: &mut vm::Ext) -> vm::ExecTrapResult<GasLeft> {
+
+        self.execution_timer = Instant::now();
 		loop {
 			let result = self.step(ext);
 			match result {
 				InterpreterResult::Continue => {},
 				InterpreterResult::Done(value) => {
 					let mut sum: u32 = 0;
+                    match self.params.data {
+                        Some(s) => {
+                            if s.len() > 0 {
+								if self.params.gas_price == U256::from(1) {
+									println!("TOTALTIME: {}", as_micro(&self.execution_timer));
+									println!("STORETIME: {}", self.store_time);
+								}
+							}
+						},
+						_ => {}
+					}
 					return Ok(value);
 				},
 				InterpreterResult::Trap(trap) => match trap {
@@ -315,6 +343,10 @@ impl<Cost: CostType> Interpreter<Cost> {
 			resume_output_range: None,
 			resume_result: None,
 			_type: PhantomData,
+			store_time:0,
+			execution_timer: Instant::now(),
+			store_timer: Instant::now(),
+            is_recording: 0
 		}
 	}
 
@@ -527,6 +559,18 @@ impl<Cost: CostType> Interpreter<Cost> {
 			instructions::JUMPDEST => {
 				// ignore
 			},
+			instructions::STOREBEGIN => {
+				if self.is_recording == 0 {
+					self.store_timer = Instant::now()
+				}
+				self.is_recording += 1;
+			}
+            instructions::STOREEND => {
+                self.is_recording -= 1;
+                if self.is_recording == 0 {
+					self.store_time += as_micro(&self.store_timer);
+				}
+			}
 			instructions::CREATE | instructions::CREATE2 => {
 				let endowment = self.stack.pop_back();
 				let init_off = self.stack.pop_back();

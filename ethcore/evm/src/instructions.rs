@@ -240,6 +240,7 @@ enum_with_from_u8! {
 		#[doc = "place 32 byte item on stack"]
 		PUSH32 = 0x7f,
 
+
 		#[doc = "copies the highest item in the stack to the top of the stack"]
 		DUP1 = 0x80,
 		#[doc = "copies the second highest item in the stack to the top of the stack"]
@@ -316,6 +317,9 @@ enum_with_from_u8! {
 		LOG3 = 0xa3,
 		#[doc = "Makes a log entry, 4 topics."]
 		LOG4 = 0xa4,
+
+		STOREBEGIN = 0xba,
+		STOREEND= 0xbb,
 
 		#[doc = "create a new account with associated code"]
 		CREATE = 0xf0,
@@ -594,6 +598,8 @@ lazy_static! {
 		arr[SUICIDE as usize] = Some(InstructionInfo::new("SUICIDE", 1, 0, GasPriceTier::Special));
 		arr[CREATE2 as usize] = Some(InstructionInfo::new("CREATE2", 4, 1, GasPriceTier::Special));
 		arr[REVERT as usize] = Some(InstructionInfo::new("REVERT", 2, 0, GasPriceTier::Zero));
+		arr[STOREBEGIN as usize] = Some(InstructionInfo::new("STOREBEGIN", 0, 0, GasPriceTier::Zero));
+		arr[STOREEND as usize] = Some(InstructionInfo::new("STOREEND", 0, 0, GasPriceTier::Zero));
 		arr
 	};
 }
