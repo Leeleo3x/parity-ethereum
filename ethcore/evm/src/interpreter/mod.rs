@@ -225,6 +225,7 @@ pub struct Interpreter<Cost: CostType> {
 	load_addr: HashSet<H256>,
 	store_addr: HashSet<H256>,
 	sha3_addr: HashSet<H256>,
+    sha3_inst: HashMap<usize, u64>,
 }
 
 lazy_static! {
@@ -250,12 +251,15 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 								if self.params.gas_price == U256::from(1) {
 //									println!("TOTALTIME: {}", as_micro(&self.execution_timer));
 //									println!("STORETIME: {}", self.store_time);
-                                    println!("STORE: {}", self.store_addr.len());
-									println!("LOAD: {}", self.load_addr.len());
-									let union_result: HashSet<_> = self.load_addr.union(&self.store_addr).collect();
-									println!("TOTAL: {}", union_result.len());
-									println!("SHA3: {}", self.sha3_instruction_count);
-									println!("UNIQUE_SHA3: {}", self.sha3_addr.len());
+//                                    println!("STORE: {}", self.store_addr.len());
+//									println!("LOAD: {}", self.load_addr.len());
+//									let union_result: HashSet<_> = self.load_addr.union(&self.store_addr).collect();
+//									println!("TOTAL: {}", union_result.len());
+//									println!("SHA3: {}", self.sha3_instruction_count);
+//									println!("UNIQUE_SHA3: {}", self.sha3_addr.len());
+									for (key, val) in self.sha3_inst.iter() {
+										println!("SHA3 {}: {}", key, val);
+									}
 								}
 							}
 						},
@@ -361,7 +365,8 @@ impl<Cost: CostType> Interpreter<Cost> {
 			sha3_instruction_count: 0,
             load_addr: HashSet::new(),
 			store_addr: HashSet::new(),
-            sha3_addr: HashSet::new()
+            sha3_addr: HashSet::new(),
+			sha3_inst: HashMap::new()
 		}
 	}
 
@@ -786,6 +791,8 @@ impl<Cost: CostType> Interpreter<Cost> {
 				let offset = self.stack.pop_back();
 				let size = self.stack.pop_back();
 				let mem = self.mem.read_slice(offset, size);
+//                self.sha3_inst.get_mut(&mem.len()) += 1;
+				*self.sha3_inst.entry(mem.len()).or_default() += 1;
 				self.sha3_instruction_count += 1;
 //				if size == U256::from(64) {
 //					let mut sha3_cache = sha3_cache_mut.lock().unwrap();
