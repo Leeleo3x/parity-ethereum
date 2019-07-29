@@ -26,6 +26,7 @@ mod shared_cache;
 use std::marker::PhantomData;
 use std::{cmp, mem};
 use std::sync::Arc;
+use std::collections::HashSet;
 use hash::keccak;
 use bytes::Bytes;
 use ethereum_types::{U256, H256, Address, H512, U512};
@@ -220,6 +221,9 @@ pub struct Interpreter<Cost: CostType> {
     store_timer: Instant,
 	store_time: u64,
 	is_recording: u32,
+	sha3_instruction_count: u64,
+	load_addr: HashSet<H256>,
+	store_addr: HashSet<H256>,
 }
 
 lazy_static! {
@@ -243,8 +247,13 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
                         Some(s) => {
                             if s.len() > 0 {
 								if self.params.gas_price == U256::from(1) {
-									println!("TOTALTIME: {}", as_micro(&self.execution_timer));
-									println!("STORETIME: {}", self.store_time);
+//									println!("TOTALTIME: {}", as_micro(&self.execution_timer));
+//									println!("STORETIME: {}", self.store_time);
+                                    println!("STORE: {}", self.store_addr.len());
+									println!("LOAD: {}", self.load_addr.len());
+									let union_result: HashSet<_> = self.load_addr.union(&self.store_addr).collect();
+									println!("TOTAL: {}", union_result.len());
+									println!("SHA3: {}", self.sha3_instruction_count);
 								}
 							}
 						},
@@ -346,7 +355,10 @@ impl<Cost: CostType> Interpreter<Cost> {
 			store_time:0,
 			execution_timer: Instant::now(),
 			store_timer: Instant::now(),
-            is_recording: 0
+            is_recording: 0,
+			sha3_instruction_count: 0,
+            load_addr: HashSet::new(),
+			store_addr: HashSet::new()
 		}
 	}
 
@@ -771,6 +783,7 @@ impl<Cost: CostType> Interpreter<Cost> {
 				let offset = self.stack.pop_back();
 				let size = self.stack.pop_back();
 				let mem = self.mem.read_slice(offset, size);
+				self.sha3_instruction_count += 1;
 //				if size == U256::from(64) {
 //					let mut sha3_cache = sha3_cache_mut.lock().unwrap();
 //					let data = U512::from(&mem[0..64]);
@@ -796,10 +809,12 @@ impl<Cost: CostType> Interpreter<Cost> {
 				let key = H256::from(&self.stack.pop_back());
 				let word = U256::from(&*ext.storage_at(&key)?);
 				self.stack.push(word);
+                self.load_addr.insert(key);
 			},
 			instructions::SSTORE => {
 				let address = H256::from(&self.stack.pop_back());
 				let val = self.stack.pop_back();
+				self.store_addr.insert(address);
 
 				let current_val = U256::from(&*ext.storage_at(&address)?);
 				// Increase refund for clear
