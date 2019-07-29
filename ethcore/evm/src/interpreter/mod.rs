@@ -224,6 +224,7 @@ pub struct Interpreter<Cost: CostType> {
 	sha3_instruction_count: u64,
 	load_addr: HashSet<H256>,
 	store_addr: HashSet<H256>,
+	sha3_addr: HashSet<H256>,
 }
 
 lazy_static! {
@@ -254,6 +255,7 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 									let union_result: HashSet<_> = self.load_addr.union(&self.store_addr).collect();
 									println!("TOTAL: {}", union_result.len());
 									println!("SHA3: {}", self.sha3_instruction_count);
+									println!("UNIQUE_SHA3: {}", self.sha3_addr.len());
 								}
 							}
 						},
@@ -358,7 +360,8 @@ impl<Cost: CostType> Interpreter<Cost> {
             is_recording: 0,
 			sha3_instruction_count: 0,
             load_addr: HashSet::new(),
-			store_addr: HashSet::new()
+			store_addr: HashSet::new(),
+            sha3_addr: HashSet::new()
 		}
 	}
 
@@ -802,6 +805,7 @@ impl<Cost: CostType> Interpreter<Cost> {
 //				}
 //				else {
 					let k = keccak(mem);
+					self.sha3_addr.insert(k);
 					self.stack.push(U256::from(&*k));
 //				};
 			},
