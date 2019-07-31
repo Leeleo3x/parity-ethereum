@@ -258,7 +258,6 @@ impl Account {
 		let db = SecTrieDB::new(&db, storage_root)?;
 		let panicky_decoder = |bytes:&[u8]| ::rlp::decode(&bytes).expect("decoding db value failed");
 		let item: U256 = db.get_with(key, panicky_decoder)?.unwrap_or_else(U256::zero);
-        println!("SHA3 32: 1");
 		let value: H256 = item.into();
 		storage_cache.insert(key.clone(), value.clone());
 		Ok(value)

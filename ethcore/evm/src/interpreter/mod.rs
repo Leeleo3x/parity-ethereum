@@ -257,9 +257,9 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 //									println!("TOTAL: {}", union_result.len());
 //									println!("SHA3: {}", self.sha3_instruction_count);
 //									println!("UNIQUE_SHA3: {}", self.sha3_addr.len());
-									for (key, val) in self.sha3_inst.iter() {
-										println!("SHA3 {}: {}", key, val);
-									}
+//									for (key, val) in self.sha3_inst.iter() {
+//										println!("SHA3 {}: {}", key, val);
+//									}
 								}
 							}
 						},
@@ -803,8 +803,8 @@ impl<Cost: CostType> Interpreter<Cost> {
 				let size = self.stack.pop_back();
 				let mem = self.mem.read_slice(offset, size);
 //                self.sha3_inst.get_mut(&mem.len()) += 1;
-				*self.sha3_inst.entry(mem.len()).or_default() += 1;
-				self.sha3_instruction_count += 1;
+//				*self.sha3_inst.entry(mem.len()).or_default() += 1;
+//				self.sha3_instruction_count += 1;
 //				if size == U256::from(64) {
 //					let mut sha3_cache = sha3_cache_mut.lock().unwrap();
 //					let data = U512::from(&mem[0..64]);
@@ -823,7 +823,7 @@ impl<Cost: CostType> Interpreter<Cost> {
 //				}
 //				else {
 					let k = keccak(mem);
-					self.sha3_addr.insert(k);
+//					self.sha3_addr.insert(k);
 					self.stack.push(U256::from(&*k));
 //				};
 			},
