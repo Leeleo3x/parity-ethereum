@@ -121,7 +121,7 @@ name = "parity"
 [profile.dev]
 
 [profile.release]
-debug = true
+debug = false
 
 [workspace]
 # This should only list projects that are not
