@@ -195,6 +195,7 @@ pub enum InterpreterResult {
 }
 
 impl From<vm::Error> for InterpreterResult {
+	#[inline(always)]
 	fn from(error: vm::Error) -> InterpreterResult {
 		InterpreterResult::Done(Err(error))
 	}
