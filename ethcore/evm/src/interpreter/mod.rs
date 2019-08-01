@@ -382,7 +382,7 @@ impl<Cost: CostType> Interpreter<Cost> {
 		} else if self.reader.len() == 0 {
 			InterpreterResult::Done(Ok(GasLeft::Known(self.gasometer.as_ref().expect("Gasometer None case is checked above; qed").current_gas.as_u256())))
 		} else {
-			self.step_inner(ext)
+			self.step_inner(ext).err().expect("step_inner never returns Ok(()); qed")
 		};
 
 		if let &InterpreterResult::Done(_) = &result {
@@ -394,7 +394,7 @@ impl<Cost: CostType> Interpreter<Cost> {
 
 	/// Inner helper function for step.
 	#[inline(always)]
-	fn step_inner(&mut self, ext: &mut vm::Ext) -> InterpreterResult {
+	fn step_inner(&mut self, ext: &mut vm::Ext) -> Result<Never, InterpreterResult> {
 		let result = match self.resume_result.take() {
 			Some(result) => result,
 			None => {
@@ -409,30 +409,21 @@ impl<Cost: CostType> Interpreter<Cost> {
 
 				let instruction = match instruction {
 					Some(i) => i,
-					None => return InterpreterResult::Done(Err(vm::Error::BadInstruction {
+					None => return Err(InterpreterResult::Done(Err(vm::Error::BadInstruction {
 						instruction: opcode
-					})),
+					}))),
 				};
 
 				let info = instruction.info();
 				self.last_stack_ret_len = info.ret;
-				match self.verify_instruction(ext, instruction, info) {
-					Err(e) => return InterpreterResult::Done(Err(e)),
-                    Ok(_) => {}
-				};
+				self.verify_instruction(ext, instruction, info)?;
 
 				// Calculate gas cost
-				let requirements = match self.gasometer.as_mut().expect(GASOMETER_PROOF).requirements(ext, instruction, info, &self.stack, self.mem.size()) {
-                    Ok(t) => t,
-					Err(e) => return InterpreterResult::Done(Err(e)),
-				};
+				let requirements = self.gasometer.as_mut().expect(GASOMETER_PROOF).requirements(ext, instruction, info, &self.stack, self.mem.size())?;
 				if self.do_trace {
 					ext.trace_prepare_execute(self.reader.position - 1, opcode, requirements.gas_cost.as_u256(), Self::mem_written(instruction, &self.stack), Self::store_written(instruction, &self.stack));
 				}
-                match self.gasometer.as_mut().expect(GASOMETER_PROOF).verify_gas(&requirements.gas_cost) {
-					Err(e) => return InterpreterResult::Done(Err(e)),
-					Ok(_) => {}
-				}
+				self.gasometer.as_mut().expect(GASOMETER_PROOF).verify_gas(&requirements.gas_cost)?;
 				self.mem.expand(requirements.memory_required_size);
 				self.gasometer.as_mut().expect(GASOMETER_PROOF).current_mem_gas = requirements.memory_total_gas;
 				self.gasometer.as_mut().expect(GASOMETER_PROOF).current_gas = self.gasometer.as_mut().expect(GASOMETER_PROOF).current_gas - requirements.gas_cost;
@@ -441,17 +432,18 @@ impl<Cost: CostType> Interpreter<Cost> {
 
 				// Execute instruction
 				let current_gas = self.gasometer.as_mut().expect(GASOMETER_PROOF).current_gas;
-				match self.exec_instruction(
+				let result = self.exec_instruction(
 					current_gas, ext, instruction, requirements.provide_gas
-				) {
-					Err(x) => return InterpreterResult::Done(Err(x)),
-					Ok(x) => x,
-				}
+				)?;
+
+				evm_debug!({ self.informant.after_instruction(instruction) });
+
+				result
 			},
 		};
 
 		if let InstructionResult::Trap(trap) = result {
-			return InterpreterResult::Trap(trap);
+			return Err(InterpreterResult::Trap(trap));
 		}
 
 		if let InstructionResult::UnusedGas(ref gas) = result {
@@ -473,31 +465,28 @@ impl<Cost: CostType> Interpreter<Cost> {
 					self.valid_jump_destinations = Some(self.cache.jump_destinations(&self.params.code_hash, &self.reader.code));
 				}
 				let jump_destinations = self.valid_jump_destinations.as_ref().expect("jump_destinations are initialized on first jump; qed");
-				let pos = match self.verify_jump(position, jump_destinations) {
-					Ok(x) => x,
-                    Err(e) => return InterpreterResult::Done(Err(e))
-				};
+				let pos = self.verify_jump(position, jump_destinations)?;
 				self.reader.position = pos;
 			},
 			InstructionResult::StopExecutionNeedsReturn {gas, init_off, init_size, apply} => {
 				let mem = mem::replace(&mut self.mem, Vec::new());
-				return InterpreterResult::Done(Ok(GasLeft::NeedsReturn {
+				return Err(InterpreterResult::Done(Ok(GasLeft::NeedsReturn {
 					gas_left: gas.as_u256(),
 					data: mem.into_return_data(init_off, init_size),
 					apply_state: apply
-				}));
+				})));
 			},
 			InstructionResult::StopExecution => {
-				return InterpreterResult::Done(Ok(GasLeft::Known(self.gasometer.as_mut().expect(GASOMETER_PROOF).current_gas.as_u256())));
+				return Err(InterpreterResult::Done(Ok(GasLeft::Known(self.gasometer.as_mut().expect(GASOMETER_PROOF).current_gas.as_u256()))));
 			},
 			_ => {},
 		}
 
 		if self.reader.position >= self.reader.len() {
-			return InterpreterResult::Done(Ok(GasLeft::Known(self.gasometer.as_mut().expect(GASOMETER_PROOF).current_gas.as_u256())));
+			return Err(InterpreterResult::Done(Ok(GasLeft::Known(self.gasometer.as_mut().expect(GASOMETER_PROOF).current_gas.as_u256()))));
 		}
 
-		InterpreterResult::Continue
+		Err(InterpreterResult::Continue)
 	}
 
 	fn verify_instruction(&self, ext: &vm::Ext, instruction: Instruction, info: &InstructionInfo) -> vm::Result<()> {
