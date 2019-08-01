@@ -217,15 +217,15 @@ pub struct Interpreter<Cost: CostType> {
 	resume_result: Option<InstructionResult<Cost>>,
 	last_stack_ret_len: usize,
 	_type: PhantomData<Cost>,
-	execution_timer: Instant,
-    store_timer: Instant,
-	store_time: u64,
-	is_recording: u32,
-	sha3_instruction_count: u64,
-	load_addr: HashSet<H256>,
-	store_addr: HashSet<H256>,
-	sha3_addr: HashSet<H256>,
-    sha3_inst: HashMap<usize, u64>,
+//	execution_timer: Instant,
+//    store_timer: Instant,
+//	store_time: u64,
+//	is_recording: u32,
+//	sha3_instruction_count: u64,
+//	load_addr: HashSet<H256>,
+//	store_addr: HashSet<H256>,
+//	sha3_addr: HashSet<H256>,
+//    sha3_inst: HashMap<usize, u64>,
 }
 
 lazy_static! {
@@ -238,7 +238,7 @@ lazy_static! {
 impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 	fn exec(mut self: Box<Self>, ext: &mut vm::Ext) -> vm::ExecTrapResult<GasLeft> {
 
-        self.execution_timer = Instant::now();
+//        self.execution_timer = Instant::now();
 		loop {
 			let result = self.step(ext);
 			match result {
@@ -358,15 +358,15 @@ impl<Cost: CostType> Interpreter<Cost> {
 			resume_output_range: None,
 			resume_result: None,
 			_type: PhantomData,
-			store_time:0,
-			execution_timer: Instant::now(),
-			store_timer: Instant::now(),
-            is_recording: 0,
-			sha3_instruction_count: 0,
-            load_addr: HashSet::new(),
-			store_addr: HashSet::new(),
-            sha3_addr: HashSet::new(),
-			sha3_inst: HashMap::new()
+//			store_time:0,
+//			execution_timer: Instant::now(),
+//			store_timer: Instant::now(),
+//            is_recording: 0,
+//			sha3_instruction_count: 0,
+//            load_addr: HashSet::new(),
+//			store_addr: HashSet::new(),
+//            sha3_addr: HashSet::new(),
+//			sha3_inst: HashMap::new()
 		}
 	}
 
@@ -591,16 +591,16 @@ impl<Cost: CostType> Interpreter<Cost> {
 				// ignore
 			},
 			instructions::STOREBEGIN => {
-				if self.is_recording == 0 {
-					self.store_timer = Instant::now()
-				}
-				self.is_recording += 1;
+//				if self.is_recording == 0 {
+//					self.store_timer = Instant::now()
+//				}
+//				self.is_recording += 1;
 			}
             instructions::STOREEND => {
-                self.is_recording -= 1;
-                if self.is_recording == 0 {
-					self.store_time += as_micro(&self.store_timer);
-				}
+//                self.is_recording -= 1;
+//                if self.is_recording == 0 {
+//					self.store_time += as_micro(&self.store_timer);
+//				}
 			}
 			instructions::CREATE | instructions::CREATE2 => {
 				let endowment = self.stack.pop_back();
@@ -831,12 +831,12 @@ impl<Cost: CostType> Interpreter<Cost> {
 				let key = H256::from(&self.stack.pop_back());
 				let word = U256::from(&*ext.storage_at(&key)?);
 				self.stack.push(word);
-                self.load_addr.insert(key);
+//                self.load_addr.insert(key);
 			},
 			instructions::SSTORE => {
 				let address = H256::from(&self.stack.pop_back());
 				let val = self.stack.pop_back();
-				self.store_addr.insert(address);
+//				self.store_addr.insert(address);
 
 				let current_val = U256::from(&*ext.storage_at(&address)?);
 				// Increase refund for clear
