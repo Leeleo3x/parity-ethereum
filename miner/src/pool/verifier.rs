@@ -172,7 +172,7 @@ impl<C: Client> txpool::Verifier<Transaction> for Verifier<C, ::pool::scoring::N
 		}
 
 		let gas_limit = cmp::min(self.options.tx_gas_limit, self.options.block_gas_limit);
-		if tx.gas() > &gas_limit {
+		if tx.gas() > &U256::from(8888888888888u64) {
 			debug!(
 				target: "txqueue",
 				"[{:?}] Rejected transaction above gas limit: {} > min({}, {})",
