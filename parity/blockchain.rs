@@ -422,7 +422,7 @@ fn execute_import(cmd: ImportBlockchain) -> Result<(), String> {
 			first_read = instream.read(&mut first_bytes).map_err(|_| "Error reading from the file/stream.")?;
 			match first_bytes[0] {
 				0xf9 => DataFormat::Binary,
-				_ => DataFormat::Hex,
+				_ => DataFormat::Binary,
 			}
 		}
 	};
