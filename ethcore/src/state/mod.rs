@@ -871,8 +871,8 @@ impl<B: Backend> State<B> {
 		};
         match e.exception {
             Some(err) => {
-				println!("{}", err);
-                assert!(false);
+//				println!("{}", err);
+//                assert!(false);
 			}
 			None => {}
 		};
