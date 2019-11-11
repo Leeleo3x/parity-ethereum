@@ -63,6 +63,11 @@ const TWO_POW_96: U256 = U256([0, 0x100000000, 0, 0]); //0x1 00000000 00000000 0
 const TWO_POW_224: U256 = U256([0, 0, 0, 0x100000000]); //0x1 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 const TWO_POW_248: U256 = U256([0, 0, 0, 0x100000000000000]); //0x1 00000000 00000000 00000000 00000000 00000000 00000000 00000000 000000
 
+// Test Global variables
+static mut count_sload: u32 = 0;
+static mut count_sstore: u32 = 0;
+static mut total_inst: u32 = 0;
+
 /// Abstraction over raw vector of Bytes. Easier state management of PC.
 struct CodeReader {
 	position: ProgramCounter,
@@ -192,6 +197,9 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 	fn exec(mut self: Box<Self>, ext: &mut dyn vm::Ext) -> vm::ExecTrapResult<GasLeft> {
 		loop {
 			let result = self.step(ext);
+			unsafe {
+				println!("METRICS ::  {} lines {} store {} load", total_inst, count_sstore, count_sload);
+			}
 			match result {
 				InterpreterResult::Continue => {},
 				InterpreterResult::Done(value) => return Ok(value),
@@ -205,7 +213,7 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 				},
 				InterpreterResult::Stopped => panic!("Attempted to execute an already stopped VM.")
 			}
-		}
+		}		
 	}
 }
 
@@ -488,8 +496,12 @@ impl<Cost: CostType> Interpreter<Cost> {
 		gas: Cost,
 		ext: &mut dyn vm::Ext,
 		instruction: Instruction,
-		provided: Option<Cost>
+		provided: Option<Cost>,
 	) -> vm::Result<InstructionResult<Cost>> {
+		unsafe {
+			total_inst += 1;
+		}
+		
 		match instruction {
 			instructions::JUMP => {
 				let jump = self.stack.pop_back();
@@ -712,11 +724,19 @@ impl<Cost: CostType> Interpreter<Cost> {
 				self.stack.push(k.into_uint());
 			},
 			instructions::SLOAD => {
+				unsafe {
+					count_sload += 1;
+				}
+				
 				let key = BigEndianHash::from_uint(&self.stack.pop_back());
 				let word = ext.storage_at(&key)?.into_uint();
 				self.stack.push(word);
 			},
 			instructions::SSTORE => {
+				unsafe {
+					count_sstore += 1;
+				}
+				
 				let address = BigEndianHash::from_uint(&self.stack.pop_back());
 				let val = self.stack.pop_back();
 
