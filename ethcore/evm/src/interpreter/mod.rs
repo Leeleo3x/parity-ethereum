@@ -68,6 +68,11 @@ const TWO_POW_96: U256 = U256([0, 0x100000000, 0, 0]); //0x1 00000000 00000000 0
 const TWO_POW_224: U256 = U256([0, 0, 0, 0x100000000]); //0x1 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 const TWO_POW_248: U256 = U256([0, 0, 0, 0x100000000000000]); //0x1 00000000 00000000 00000000 00000000 00000000 00000000 00000000 000000
 
+// Test Global variables
+static mut count_sload: u32 = 0;
+static mut count_sstore: u32 = 0;
+static mut total_inst: u32 = 0;
+
 fn as_micro(instant: &Instant) -> u64 {
 	let duration = instant.elapsed();
 	let mut sec = duration.as_secs();
@@ -564,6 +569,9 @@ impl<Cost: CostType> Interpreter<Cost> {
 		instruction: Instruction,
 		provided: Option<Cost>
 	) -> vm::Result<InstructionResult<Cost>> {
+		unsafe {
+			total_inst += 1;
+		}
 		match instruction {
 			instructions::JUMP => {
 				let jump = self.stack.pop_back();
@@ -821,12 +829,18 @@ impl<Cost: CostType> Interpreter<Cost> {
 //				};
 			},
 			instructions::SLOAD => {
+				unsafe {
+					count_sload += 1;
+				}
 				let key = H256::from(&self.stack.pop_back());
 				let word = U256::from(&*ext.storage_at(&key)?);
 				self.stack.push(word);
 //                self.load_addr.insert(key);
 			},
 			instructions::SSTORE => {
+				unsafe {
+					count_sstore += 1;
+				}
 				let address = H256::from(&self.stack.pop_back());
 				let val = self.stack.pop_back();
 //				self.store_addr.insert(address);
