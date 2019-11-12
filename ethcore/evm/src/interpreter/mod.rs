@@ -242,6 +242,9 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 //        self.execution_timer = Instant::now();
 		loop {
 			let result = self.step(ext);
+			unsafe {
+				println!("INSTRUCTIONS ::  {} lines {} store {} load", total_inst, count_sstore, count_sload);
+			}
 			match result {
 				InterpreterResult::Continue => {},
 				InterpreterResult::Done(value) => {
