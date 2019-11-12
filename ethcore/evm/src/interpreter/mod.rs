@@ -72,6 +72,7 @@ const TWO_POW_248: U256 = U256([0, 0, 0, 0x100000000000000]); //0x1 00000000 000
 static mut count_sload: u32 = 0;
 static mut count_sstore: u32 = 0;
 static mut total_inst: u32 = 0;
+static mut num_exec: u32 = 0;
 
 fn as_micro(instant: &Instant) -> u64 {
 	let duration = instant.elapsed();
@@ -267,7 +268,10 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 //										println!("SHA3 {}: {}", key, val);
 //									}
 									unsafe {
-										println!("INSTRUCTIONS ::  {} lines {} store {} load", total_inst, count_sstore, count_sload);
+										if num_exec < 5 {
+											println!("INSTRUCTIONS ::  {} lines {} store {} load", total_inst, count_sstore, count_sload);
+										}
+										num_exec += 1;
 										total_inst = 0;
 										count_sstore = 0;
 										count_sload = 0;
