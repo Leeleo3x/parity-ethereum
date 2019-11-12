@@ -31,10 +31,6 @@ use hash::keccak;
 use bytes::Bytes;
 use ethereum_types::{U256, U512, H256, Address, BigEndianHash};
 
-//temp
-use std::fs::File;
-use std::io::prelude::*;
-
 use vm::{
 	self, ActionParams, ParamsType, ActionValue, CallType, MessageCallResult,
 	ContractCreateResult, CreateContractAddress, ReturnData, GasLeft, Schedule,
@@ -201,16 +197,7 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 		loop {
 			let result = self.step(ext);
 			unsafe {
-				let mut file = File::create("/home/leo/inst.txt")?;
-				let mut contents = String::new();
-				contents = "INSTRUCTIONS: ".to_string();
-				contents.push_str(&(total_inst.to_string()));
-				contents.push_str(&" sstore: ".to_string());
-				contents.push_str(&(count_sstore.to_string()));
-				contents.push_str(&" sload: ".to_string());
-				contents.push_str(&(count_sload.to_string()));
-				file.write_all(contents.as_bytes())?;
-				println!("METRICS ::  {} lines {} store {} load", total_inst, count_sstore, count_sload);
+				println!("INSTRUCTIONS ::  {} lines {} store {} load", total_inst, count_sstore, count_sload);
 			}
 			match result {
 				InterpreterResult::Continue => {},
