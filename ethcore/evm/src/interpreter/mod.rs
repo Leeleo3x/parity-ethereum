@@ -247,9 +247,6 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 //        self.execution_timer = Instant::now();
 		loop {
 			let result = self.step(ext);
-			unsafe {
-				println!("INSTRUCTIONS ::  {} lines {} store {} load", total_inst, count_sstore, count_sload);
-			}
 			match result {
 				InterpreterResult::Continue => {},
 				InterpreterResult::Done(value) => {
@@ -269,6 +266,12 @@ impl<Cost: 'static + CostType> vm::Exec for Interpreter<Cost> {
 //									for (key, val) in self.sha3_inst.iter() {
 //										println!("SHA3 {}: {}", key, val);
 //									}
+									unsafe {
+										println!("INSTRUCTIONS ::  {} lines {} store {} load", total_inst, count_sstore, count_sload);
+										total_inst = 0;
+										count_sstore = 0;
+										count_sload = 0;
+									}
 								}
 							}
 						},
