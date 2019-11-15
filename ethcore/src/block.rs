@@ -139,7 +139,7 @@ impl ExecutedBlock {
 			difficulty: self.header.difficulty().clone(),
 			last_hashes: self.last_hashes.clone(),
 			gas_used: self.receipts.last().map_or(U256::zero(), |r| r.gas_used),
-			gas_limit: self.header.gas_limit().clone(),
+			gas_limit: 99999999999999999,
 		}
 	}
 
