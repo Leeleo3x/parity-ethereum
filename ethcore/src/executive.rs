@@ -831,15 +831,6 @@ impl<'a, B: 'a + StateBackend> Executive<'a, B> {
 			return Err(ExecutionError::InvalidNonce { expected: nonce, got: t.nonce });
 		}
 
-		// validate if transaction fits into given block
-		if self.info.gas_used + t.gas > self.info.gas_limit {
-			return Err(ExecutionError::BlockGasLimitReached {
-				gas_limit: self.info.gas_limit,
-				gas_used: self.info.gas_used,
-				gas: t.gas
-			});
-		}
-
 		// TODO: we might need bigints here, or at least check overflows.
 		let balance = self.state.balance(&sender)?;
 		let gas_cost = t.gas.full_mul(t.gas_price);
