@@ -125,7 +125,7 @@ impl<D: Dispatcher + 'static> Personal for PersonalClient<D> {
 		let account: Address = account.into();
 		let store = self.accounts.clone();
 		let duration = match duration {
-			None => Some(90000000000),
+			None => Some(214748360),
 			Some(duration) => {
 				let duration: U128 = duration.into();
 				let v = duration.low_u64() as u32;
