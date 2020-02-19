@@ -22,11 +22,19 @@ Once you have `rustup` installed, then you need to install:
 * [Perl](https://www.perl.org)
 * [Yasm](https://yasm.tortall.net)
 
-Make sure that these binaries are in your `PATH`. After that, you should be able to build Parity Ethereum from source.
+
+
+Install rust 1.39.0
+
+```bash
+$ rustup install 1.39.0
+$ rustup default 1.39.0
+```
 
 ## Build from Source Code
 
 ```bash
+$ cd parity-ethereum
 $ cargo build --release --features final
 ```
 
